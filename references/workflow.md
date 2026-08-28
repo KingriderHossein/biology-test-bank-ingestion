@@ -17,6 +17,17 @@ bank_<id>/
     review/
 ```
 
+In Google Drive, use the logical year layout:
+
+```text
+<bank>/<year>/
+  01_sources/
+  02_working/
+  03_validated/
+  04_reports/
+  05_human_review/
+```
+
 Original sources remain immutable. Generated outputs can be reproduced from source hashes plus config/script versions.
 
 ## 2. Year-by-year state machine
@@ -28,11 +39,13 @@ DISCOVERED
   -> QUESTION_BLOCKS_EXTRACTED
   -> STRUCTURED_TRANSCRIPTION_COMPLETE
   -> FIGURE_CONTEXT_REVIEW_COMPLETE
-  -> HUMAN_TEXT_REVIEW_COMPLETE
+  -> INTERNAL_SOURCE_REVIEW_COMPLETE
+  -> HUMAN_REVIEW_PUBLISHED
+  -> HUMAN_REVIEW_COMPLETE
   -> YEAR_COMPLETE
 ```
 
-Do not advance a second year in parallel.
+Do not advance a second year in parallel. `YEAR_COMPLETE` requires independent human review.
 
 ## 3. Source audit
 
@@ -75,7 +88,7 @@ Preferred sequence:
 5. normalize only safe typography/digits;
 6. parse stem/options;
 7. flag uncertainty;
-8. compare with image source during review.
+8. compare with image source during internal review.
 
 ## 7. Figures
 
@@ -92,6 +105,14 @@ Suggested statuses:
 
 Represent passages/tables/diagrams used by multiple questions as separate records. Each question references `context_id`; context stores its own source page/region and review state.
 
-## 9. Completion
+## 9. Human review publication
 
-Year completion must be explicitly validated. If the project allows explanations to be added later, keep explanation completion as a separate downstream gate rather than blocking the verified-question dataset unless the user changes the policy.
+After the extracted year dataset passes internal source checks, publish a review package to `05_human_review` in Google Drive. Use a native Google Sheet with one row per expected question. The human reviewer compares extraction against authoritative source material and records `APPROVED`, `NEEDS_CORRECTION`, `UNCLEAR`, or `PENDING` plus an issue code and note.
+
+Read `human-review-protocol.md` for the full correction loop and pass criteria.
+
+## 10. Completion
+
+Year completion must be explicitly validated. A year cannot become complete while any human-review row is pending, needs correction, or unclear. All blocking findings must be resolved and re-reviewed before the next year is unlocked.
+
+If the project allows explanations to be added later, keep explanation completion as a separate downstream gate rather than blocking the verified-question dataset unless the user changes the policy.
