@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.2.0 - 2026-08-29
+
+- Added an independent human-review gate before year completion.
+- Added `references/human-review-protocol.md` with reviewer states, issue codes, correction loop, and pass criteria.
+- Added `05_human_review` to the Google Drive year layout.
+- Defined Google Sheets as the default question-level review surface.
+- Required one review row per expected question and all rows to be `APPROVED` before the next year is unlocked.
+- Added reviewer findings and correction history to provenance requirements.
+- Seeded a 190-row human-review template for bank 1206 / year 1404.
+- Bumped the active project checkpoint to v0.3.0.
+
 ## v0.1.1 - 2026-08-29
 
 - Added Google Drive as the default persistent data plane for large source and working artifacts.
