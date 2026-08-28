@@ -2,80 +2,37 @@
 
 ## Purpose
 
-Add an independent human verification layer between structured extraction and year completion.
+Use a minimal independent human check after question extraction. The reviewer should not fill forms, classify errors, or approve every question individually.
 
-## Required Drive package per year
+## One Google Doc per year
 
-Under the active year folder create `05_human_review/` and place or link:
+After the active year has been extracted and internally checked:
 
-- source question crops or source-reference files;
-- structured question dataset for the year;
-- official answer mapping;
-- figure/shared-context references;
-- a native Google Sheet review queue with one row per expected question;
-- optional narrative QA/completion report.
+1. Create one native Google Doc under that year's `05_human_review/` folder.
+2. Put every extracted question in order in the Doc.
+3. For each question include the question number, extracted stem, extracted options, and official answer. Include the relevant figure/context when needed to verify the extraction.
+4. Keep the document simple and easy to scan.
 
-## Review queue columns
+## Reviewer instruction
 
-At minimum include:
+Tell the reviewer only this:
 
-- question number;
-- subject;
-- source page;
-- source crop/reference link;
-- stem;
-- options;
-- official answer;
-- figure flag;
-- shared context ID;
-- extraction status;
-- reviewer result;
-- issue type;
-- reviewer note;
-- reviewer identity;
-- review date.
+**Compare the extracted questions with the original booklet and highlight any text or extracted part that is wrong. Do not fill any form or status field.**
 
-## Reviewer result states
-
-- `PENDING`: not reviewed yet.
-- `APPROVED`: extraction, options, source association, figure/context association, and answer mapping are acceptable.
-- `NEEDS_CORRECTION`: a concrete correction is required.
-- `UNCLEAR`: source or mapping is ambiguous and needs escalation.
-
-## Issue types
-
-Use stable issue codes when possible:
-
-- `NONE`
-- `OCR_TEXT`
-- `OPTION_ORDER`
-- `QUESTION_BOUNDARY`
-- `FIGURE`
-- `SHARED_CONTEXT`
-- `ANSWER_MAPPING`
-- `OTHER`
+The reviewer may highlight a whole line, word, option, number, formula, label, or other incorrect extracted part.
 
 ## Correction loop
 
-1. Preserve the reviewer finding as an immutable review record.
-2. Correct the structured dataset, not the reviewer history.
-3. Record what changed and which question IDs were affected.
-4. Return corrected questions for re-review when the change affects visible question content, option order, figure/context association, or answer mapping.
-5. Resolve the finding only after the corrected version is accepted.
+1. Read the highlighted portions from the review Doc.
+2. Compare each highlighted portion with the authoritative source page/crop.
+3. Correct the structured dataset.
+4. Update the review Doc when the visible extraction changes.
+5. Keep the original source and raw OCR unchanged.
 
 ## Pass condition
 
-The human-review gate passes only when:
+The human-review gate passes when the reviewer has completed the review and all highlighted extraction errors are corrected or explicitly resolved.
 
-- total review rows equals expected question count;
-- every expected question is `APPROVED`;
-- `PENDING = 0`;
-- `NEEDS_CORRECTION = 0`;
-- `UNCLEAR = 0`;
-- all correction loops are closed.
+No per-question approval table, issue code, reviewer identity field, review date, review state, or correction form is required.
 
-Do not unlock the next year before these conditions are met.
-
-## Independence
-
-The reviewer should compare the published extraction against the authoritative source. Do not ask the reviewer to trust OCR/model output or infer missing text from the extraction itself.
+Do not unlock the next year before this gate passes.
