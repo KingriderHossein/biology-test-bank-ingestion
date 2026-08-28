@@ -1,0 +1,18 @@
+# Source documents and generated exam content
+**/sources/**
+**/raw/**
+**/pages_*/**
+**/question_crops/**
+**/figures/**
+**/ocr_raw/**
+**/*.pdf
+**/*.rar
+**/*.7z
+
+# Allow skill docs and small metadata only
+!references/**
+!project/**
+
+__pycache__/
+*.pyc
+.DS_Store
