@@ -17,7 +17,7 @@ bank_<id>/
     review/
 ```
 
-In Google Drive, use the logical year layout:
+In Google Drive, use:
 
 ```text
 <bank>/<year>/
@@ -28,7 +28,7 @@ In Google Drive, use the logical year layout:
   05_human_review/
 ```
 
-Original sources remain immutable. Generated outputs can be reproduced from source hashes plus config/script versions.
+Original sources remain immutable.
 
 ## 2. Year-by-year state machine
 
@@ -40,32 +40,24 @@ DISCOVERED
   -> STRUCTURED_TRANSCRIPTION_COMPLETE
   -> FIGURE_CONTEXT_REVIEW_COMPLETE
   -> INTERNAL_SOURCE_REVIEW_COMPLETE
-  -> HUMAN_REVIEW_PUBLISHED
-  -> HUMAN_REVIEW_COMPLETE
+  -> HUMAN_REVIEW_DOC_PUBLISHED
+  -> HUMAN_REVIEW_CORRECTIONS_RESOLVED
   -> YEAR_COMPLETE
 ```
 
-Do not advance a second year in parallel. `YEAR_COMPLETE` requires independent human review.
+Do not advance a second year in parallel.
 
 ## 3. Source audit
 
-For each source record:
-
-- filename and role;
-- SHA-256;
-- file type;
-- page count if relevant;
-- native text quality: `usable`, `partial`, `watermark_only`, `none`, `unknown`;
-- OCR required: true/false;
-- notes about image quality, skew, columns, or unusual layout.
+Record filename/role, SHA-256, file type, page count, native text quality, OCR requirement, and unusual layout notes.
 
 ## 4. Text-vs-image decision
 
-A PDF can contain a text layer that is useless. Sample representative pages and compare extracted text with visible exam content. If extraction yields mostly watermark, headers, gibberish, or incomplete content, treat the page as image-based.
+A PDF text layer can be useless. Compare extracted text with visible exam content; if it is mainly watermark, headers, gibberish, or incomplete, treat the page as image-based.
 
 ## 5. Segmentation strategy order
 
-Prefer strategies in this order when reliable:
+Prefer:
 
 1. explicit PDF structure/coordinates;
 2. stable geometric question marker or separator;
@@ -77,7 +69,7 @@ Count equality is necessary but not sufficient. Visually sample beginning, middl
 
 ## 6. OCR strategy
 
-Do not run a single full-page OCR and directly publish its text.
+Do not run full-page OCR and directly publish its text.
 
 Preferred sequence:
 
@@ -92,27 +84,28 @@ Preferred sequence:
 
 ## 7. Figures
 
-A question source crop is always preserved even if a separate figure crop is produced. `has_figure=true` does not mean the figure was successfully isolated; track a separate `figure_status`.
-
-Suggested statuses:
-
-- `none`
-- `present_in_source_crop`
-- `isolated_pending_review`
-- `isolated_verified`
+Always preserve the question source crop. Track whether a figure is present and whether it has been isolated/verified.
 
 ## 8. Shared contexts
 
-Represent passages/tables/diagrams used by multiple questions as separate records. Each question references `context_id`; context stores its own source page/region and review state.
+Represent passages/tables/diagrams used by multiple questions as separate records. Each question references `context_id`.
 
 ## 9. Human review publication
 
-After the extracted year dataset passes internal source checks, publish a review package to `05_human_review` in Google Drive. Use a native Google Sheet with one row per expected question. The human reviewer compares extraction against authoritative source material and records `APPROVED`, `NEEDS_CORRECTION`, `UNCLEAR`, or `PENDING` plus an issue code and note.
+After the extracted year passes internal source checks, create one Google Doc under `05_human_review` containing all extracted questions in order.
 
-Read `human-review-protocol.md` for the full correction loop and pass criteria.
+Each question should show the extracted content needed for checking: number, stem, options, official answer, and figure/context when relevant.
+
+The reviewer has one task only: compare with the original booklet and highlight incorrect extracted text or parts.
+
+Do not require a Google Sheet, per-question approval, status fields, issue codes, reviewer names, dates, or notes.
+
+Read `human-review-protocol.md` for the simple correction loop.
 
 ## 10. Completion
 
-Year completion must be explicitly validated. A year cannot become complete while any human-review row is pending, needs correction, or unclear. All blocking findings must be resolved and re-reviewed before the next year is unlocked.
+After the reviewer finishes, inspect highlighted portions, verify them against the source, correct the structured dataset, and update the review Doc if needed.
 
-If the project allows explanations to be added later, keep explanation completion as a separate downstream gate rather than blocking the verified-question dataset unless the user changes the policy.
+A year becomes complete when the review is finished and all highlighted extraction errors are resolved. Only then unlock the next year.
+
+If explanations are added later, keep them as a downstream feature unless the user changes the policy.
