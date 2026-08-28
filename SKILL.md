@@ -1,25 +1,25 @@
 ---
 name: biology-test-bank-ingestion
-description: Build reliable structured question banks from exam PDFs, scanned booklets, answer keys, archives, and mixed text/image questions. Use when the user wants to ingest, audit, OCR, segment, validate, resume, or extend a test bank; convert exam booklets into structured question records; preserve figures and shared passages; map official answer keys; or continue a multi-year question-bank project. Enforce strict year-by-year processing with quality gates, persistent checkpoints, Google Drive as the default data plane, and mandatory human review before a year is completed.
+description: Build reliable structured question banks from exam PDFs, scanned booklets, answer keys, archives, and mixed text/image questions. Use when the user wants to ingest, audit, OCR, segment, validate, resume, or extend a test bank; convert exam booklets into structured question records; preserve figures and shared passages; map official answer keys; or continue a multi-year question-bank project. Enforce strict year-by-year processing with quality gates, persistent checkpoints, Google Drive as the data plane, and a simple Google Doc human-review step before a year is completed.
 ---
 
 # Biology Test Bank Ingestion
 
-Process question-bank sources as a provenance-preserving data pipeline. Treat verified structured data as the primary product. Do not start product UI work unless the user explicitly asks for it.
+Process question-bank sources as a provenance-preserving data pipeline. Treat verified structured data as the primary product.
 
 ## Core rule: one year at a time
 
 For a multi-year bank, process exactly one exam year at a time.
 
 1. Select the active year.
-2. Complete machine extraction and source verification for that year.
-3. Publish the complete review package for that year to Google Drive.
-4. Require human review of every expected question.
-5. Resolve all blocking reviewer findings.
+2. Complete extraction and internal source verification for that year.
+3. Publish all extracted questions for that year into one Google Doc in Drive.
+4. Let the human reviewer highlight only the incorrect text/part in that Doc.
+5. Read the highlighted portions, correct the extracted dataset, and update the Doc if needed.
 6. Persist the final checkpoint.
-7. Do not process, OCR, segment, or modify the next year until the active year has passed the human-review completion gate.
+7. Do not start the next year until the current year has passed the human-review gate.
 
-If a user asks to resume an existing project, first load its persisted checkpoint from `project/<bank-id>/current_checkpoint.json` or the corresponding GitHub repository. Do not reconstruct status from memory when a checkpoint exists.
+If a user asks to resume an existing project, first load `project/<bank-id>/current_checkpoint.json` from the corresponding GitHub repository. Do not reconstruct status from memory when a checkpoint exists.
 
 ## Storage model
 
@@ -28,23 +28,10 @@ Read `references/storage-policy.md` before writing persistent project data.
 Use:
 
 - GitHub as the control plane for code, schemas, configs, hashes, quality gates, checkpoints, and non-content metadata.
-- Google Drive as the default data plane for source archives/PDFs, rendered pages, question crops, figures, OCR/raw transcription, structured datasets, validated exports, reports, and human-review packages.
-- Google Sheets as the default human-review surface for question-level approval, issue classification, reviewer notes, reviewer identity, and review date.
-- Google Docs for human-readable logs, audit summaries, narrative review notes, and completion reports; do not use Google Docs as binary/object storage.
+- Google Drive as the data plane for source archives/PDFs, rendered pages, question crops, figures, OCR/raw transcription, structured datasets, validated exports, and review artifacts.
+- One Google Doc per completed extraction year as the human-review surface. Do not use a review spreadsheet unless the user explicitly asks for one.
 
-When the GitHub repository is public, do not persist private Drive folder IDs or private Drive URLs unless the user explicitly requests it. Persist logical Drive names/paths and resolve them through the connected Drive when resuming.
-
-## Intake
-
-Accept one or more of:
-
-- archive (`.zip`, `.rar`, `.7z`) containing question booklets and answer keys;
-- question PDF/image set;
-- official answer-key PDF/image/text;
-- an existing year workspace/checkpoint;
-- a new test bank from another subject or exam.
-
-Before processing, inventory files and identify the active year. Preserve original sources unchanged.
+When the GitHub repository is public, do not persist private Drive folder IDs or private Drive URLs unless the user explicitly requests it. Persist logical Drive names/paths and resolve them through connected Drive when resuming.
 
 ## Workflow
 
@@ -54,28 +41,25 @@ Read `references/workflow.md` before running a new ingestion or resuming after a
 
 - Inventory source files.
 - Identify question booklet and answer key for the active year.
-- Record SHA-256 hashes.
-- Record page count and whether useful native text exists.
-- Never treat the presence of a PDF text layer as proof that OCR is unnecessary.
+- Record SHA-256 hashes and page count.
+- Check whether native PDF text is actually usable.
 - Keep original files immutable.
 
 ### Gate 1 - Official answer mapping
 
 - Prefer the official answer key over model inference.
 - Normalize Persian/Arabic digits when parsing.
-- Validate that all expected question numbers have exactly one option in the allowed range.
-- If the key is image-only, OCR or transcribe it and mark the source method.
+- Validate that all expected question numbers have exactly one allowed answer.
 - Never silently invent a missing answer.
 
 Use `scripts/parse_answer_key_pairs_v0.1.0.py` when applicable.
 
 ### Gate 2 - Question segmentation
 
-- Render scanned/image-based pages at high resolution, normally 300 DPI.
-- Detect stable layout cues before relying on OCR for question numbering.
-- Prefer deterministic geometric cues when available.
+- Render image-based pages at high resolution, normally 300 DPI.
+- Prefer deterministic layout cues over OCR for question numbering when reliable.
 - Calibrate detector thresholds per year.
-- Require detected question count to match expected count before accepting segmentation.
+- Require detected question count to match expected count.
 - Preserve a source crop for every question.
 
 Use `scripts/detect_markers_v0.1.0.py` with a year-specific config, then `scripts/build_question_crops_v0.1.0.py`.
@@ -84,56 +68,56 @@ Use `scripts/detect_markers_v0.1.0.py` with a year-specific config, then `script
 
 For each question create:
 
+- question number and source page;
 - `stem_raw` / `stem_clean`;
 - four options when applicable;
-- question number and source page;
 - official correct option;
 - `has_figure` and figure/source asset references;
 - optional shared-context ID;
-- extraction and review status.
+- extraction/review status.
 
 OCR output is a draft, never final verified text. Mixed Persian/English scientific notation, formulas, sequence strings, gene/protein names, Greek letters, subscripts, and question numbers require special review.
 
 ### Gate 4 - Figures and shared contexts
 
 - Preserve figures as image assets instead of forcing them into OCR text.
-- When a figure is embedded in a full-page scan, crop from the authoritative rendered page.
-- Keep reading passages, cloze passages, tables, diagrams, or other shared material as separate context records referenced by multiple questions.
-- Do not duplicate the same passage into every question.
+- Crop figures from the authoritative rendered page when needed.
+- Keep passages, tables, diagrams, or other shared material as separate context records referenced by multiple questions.
 
 ### Gate 5 - Internal source verification
 
-- Compare extracted text with the source crop/page.
-- Resolve obvious OCR errors before publication for external review.
-- Verify option ordering, answer-key association, and figure/context association.
+- Compare extracted text with source crop/page.
+- Resolve obvious OCR errors before handing the year to the human reviewer.
+- Verify option ordering, answer association, and figure/context association.
 - Keep raw extraction and cleaned text separately.
 
-### Gate 6 - Publish and complete human review
+### Gate 6 - Publish one review Doc
 
 Read `references/human-review-protocol.md`.
 
-For every active year:
+After extraction and internal verification:
 
-1. Publish the year review package under the Drive year path in `05_human_review`.
-2. Include source-reference access, structured question fields, official answer, figure/context flags, and one review row per expected question.
-3. Use reviewer states: `PENDING`, `APPROVED`, `NEEDS_CORRECTION`, `UNCLEAR`.
-4. Preserve reviewer findings; never overwrite them when applying corrections.
-5. Apply required corrections to the structured dataset, then return affected questions to review when needed.
-6. Require all expected questions to be `APPROVED` and zero unresolved blocking findings before passing this gate.
-
-Human review is mandatory. Internal/model verification alone cannot make a year `COMPLETE`.
+1. Create one Google Doc for the active year inside `05_human_review`.
+2. Put all extracted questions in order in that Doc, including question number, stem, options, official answer, and visible figure/context when needed for checking.
+3. Ask the reviewer only to highlight incorrect text or incorrect extracted parts.
+4. Do not require reviewer statuses, issue codes, forms, notes, reviewer identity, dates, or per-question approval rows.
+5. Use the highlighted portions as the correction queue.
 
 ### Gate 7 - Year completion
 
-Run `scripts/validate_year_v0.1.0.py` plus human-review gate checks.
+A year can be `COMPLETE` only when:
 
-A year can be `COMPLETE` only when machine/data validation passes, the review package is published, all expected questions are human-approved, and unresolved blocking findings equal zero. Persist the final year checkpoint before moving to the next year.
+- extraction/data validation passes;
+- the yearly review Doc has been published;
+- the human reviewer has finished highlighting detected errors;
+- highlighted errors have been corrected or explicitly resolved;
+- the final checkpoint is persisted.
+
+Then and only then unlock the next year.
 
 ## Data contract
 
-Read `references/data-contract.md` when creating or modifying JSON records.
-
-Never overwrite provenance fields with cleaned values. Preserve source hashes, pages, crop coordinates, raw OCR/transcription, cleaned text, official-answer provenance, review states, reviewer findings, correction history, and pipeline/script version.
+Read `references/data-contract.md` when creating or modifying JSON records. Preserve source hashes, source page, crop coordinates, raw OCR/transcription, cleaned text, official-answer provenance, review state, and pipeline/script version.
 
 ## Persistent checkpoints
 
@@ -141,7 +125,7 @@ After every completed gate, update the project's checkpoint file. Read `referenc
 
 For the current MSc Biology 1206 project, the seed checkpoint is stored at `project/1206/current_checkpoint.json`.
 
-Do not store copyrighted exam PDFs, full question crops, or large generated page images in the reusable skill repository unless the user explicitly owns the distribution rights and asks to publish them. Store large project artifacts in the configured Google Drive data plane.
+Do not store copyrighted exam PDFs, full question crops, or large generated page images in the public reusable skill repository. Store large project artifacts in the configured Google Drive data plane.
 
 ## Reuse for another question bank
 
@@ -150,13 +134,13 @@ When the user provides a different bank:
 1. Create a new bank ID.
 2. Inventory its available years.
 3. Select one active year only.
-4. Create/resolve the corresponding Google Drive bank/year folders, including `05_human_review`.
-5. Calibrate source extraction and segmentation for that year.
+4. Create/resolve its Drive bank/year folders, including `05_human_review`.
+5. Calibrate extraction and segmentation for that year.
 6. Apply the same gates and data contract.
-7. Publish that year for human review before completion.
+7. Publish one Google Doc containing that year's extracted questions for human highlighting.
 8. Persist a new checkpoint under `project/<bank-id>/`.
 
-Do not assume the 1206 layout, subject ranges, 190-question count, or 1404 marker geometry applies to a new bank.
+Do not assume the 1206 layout, subject ranges, question count, or 1404 marker geometry applies to another bank or year.
 
 ## Output expectations
 
@@ -165,10 +149,9 @@ At the end of each working session report only verifiable state:
 - active bank and year;
 - completed gates;
 - counts detected/expected;
-- human review counts (`approved`, `needs_correction`, `unclear`, `pending`);
-- unresolved exceptions;
+- whether the yearly review Doc is published;
+- whether highlighted human-review errors remain unresolved;
 - exact next gate;
-- checkpoint version/path;
-- persistent data location by logical Drive path when used.
+- checkpoint version/path.
 
-Never claim a year is complete before human review passes.
+Never claim a year is complete before the simple human-review Doc gate passes.
