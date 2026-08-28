@@ -1,6 +1,6 @@
 {
-  "checkpoint_version": "0.2.1",
-  "skill_version": "0.1.0",
+  "checkpoint_version": "0.2.2",
+  "skill_version": "0.1.1",
   "bank_id": "1206",
   "project_title": "MSc Biology 1206 Test Bank",
   "processing_policy": "strict_year_by_year",
@@ -8,6 +8,16 @@
   "active_year": 1404,
   "next_year_locked": true,
   "expected_question_count": 190,
+  "storage": {
+    "control_plane": "github",
+    "data_plane": "google_drive",
+    "drive_root_folder_name": "Biology Test Bank Ingestion",
+    "drive_bank_path": "Biology Test Bank Ingestion/1206",
+    "drive_active_year_path": "Biology Test Bank Ingestion/1206/1404",
+    "year_subfolders": ["01_sources", "02_working", "03_validated", "04_reports"],
+    "google_docs_role": "human-readable logs, audit summaries, review notes, and completion reports",
+    "public_github_private_drive_identifiers": "do_not_persist"
+  },
   "source_summary": {
     "question_pdf_pages": 24,
     "question_pdf_sha256": "4d945e132d0ce03f0f2f788e9bdf73758ef5b874c453338a842d053a3e9f8a5f",
@@ -34,10 +44,11 @@
   },
   "segmentation_method": "connected-component detection of printed question-number dash; calibrated for year 1404 only",
   "blocking_exceptions": [],
-  "next_action": "Gate 3: structured transcription of Q1-Q190 for year 1404; retain raw OCR, parse stem/options, flag figures, and do not start 1403.",
+  "next_action": "Gate 3: structured transcription of Q1-Q190 for year 1404; persist large source/working artifacts under the configured Google Drive year path, retain raw OCR, parse stem/options, flag figures, and do not start 1403.",
   "notes": [
     "Most question pages are image-based even when a PDF text layer exists.",
     "Official answer key for 1404 is machine-readable and mapped 190/190.",
-    "Question marker geometry is year-specific and must not be reused blindly for other years."
+    "Question marker geometry is year-specific and must not be reused blindly for other years.",
+    "Google Drive is the persistent data plane; GitHub remains the control plane."
   ]
 }
