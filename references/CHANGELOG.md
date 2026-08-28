@@ -1,15 +1,20 @@
 # Changelog
 
+## v0.2.1 - 2026-08-29
+
+- Simplified the human-review workflow based on user feedback.
+- Replaced the Google Sheets review queue with one Google Doc per year.
+- Reviewer task is now only: compare with the original booklet and highlight incorrect extracted text/parts.
+- Removed required per-question approval states, issue codes, reviewer identity, dates, notes, and approval rows.
+- Human-review completion now means the reviewer finished and all highlighted extraction errors were resolved.
+- Kept `05_human_review` as the Drive destination for the yearly review Doc.
+- Bumped the active project checkpoint to v0.3.1.
+
 ## v0.2.0 - 2026-08-29
 
 - Added an independent human-review gate before year completion.
-- Added `references/human-review-protocol.md` with reviewer states, issue codes, correction loop, and pass criteria.
+- Added `references/human-review-protocol.md`.
 - Added `05_human_review` to the Google Drive year layout.
-- Defined Google Sheets as the default question-level review surface.
-- Required one review row per expected question and all rows to be `APPROVED` before the next year is unlocked.
-- Added reviewer findings and correction history to provenance requirements.
-- Seeded a 190-row human-review template for bank 1206 / year 1404.
-- Bumped the active project checkpoint to v0.3.0.
 
 ## v0.1.1 - 2026-08-29
 
