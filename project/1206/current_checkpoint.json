@@ -1,9 +1,9 @@
 {
-  "checkpoint_version": "0.2.2",
-  "skill_version": "0.1.1",
+  "checkpoint_version": "0.3.0",
+  "skill_version": "0.2.0",
   "bank_id": "1206",
   "project_title": "MSc Biology 1206 Test Bank",
-  "processing_policy": "strict_year_by_year",
+  "processing_policy": "strict_year_by_year_with_human_review",
   "year_order": [1404, 1403, 1402, 1401, 1400, 1399, 1398, 1397, 1396, 1395, 1394],
   "active_year": 1404,
   "next_year_locked": true,
@@ -14,8 +14,9 @@
     "drive_root_folder_name": "Biology Test Bank Ingestion",
     "drive_bank_path": "Biology Test Bank Ingestion/1206",
     "drive_active_year_path": "Biology Test Bank Ingestion/1206/1404",
-    "year_subfolders": ["01_sources", "02_working", "03_validated", "04_reports"],
-    "google_docs_role": "human-readable logs, audit summaries, review notes, and completion reports",
+    "year_subfolders": ["01_sources", "02_working", "03_validated", "04_reports", "05_human_review"],
+    "human_review_surface": "google_sheets",
+    "google_docs_role": "human-readable logs, audit summaries, narrative review notes, and completion reports",
     "public_github_private_drive_identifiers": "do_not_persist"
   },
   "source_summary": {
@@ -30,8 +31,22 @@
     "question_blocks_extracted": true,
     "ocr_structured": false,
     "figure_context_review_complete": false,
-    "human_text_review_complete": false,
+    "internal_source_review_complete": false,
+    "human_review_package_published": false,
+    "human_review_complete": false,
     "year_complete": false
+  },
+  "human_review": {
+    "required": true,
+    "reviewer_independent": true,
+    "review_sheet_title": "1206 - 1404 Human Review",
+    "review_sheet_template_created": true,
+    "approved": 0,
+    "needs_correction": 0,
+    "unclear": 0,
+    "pending": 190,
+    "blocking_findings": 0,
+    "pass_condition": "approved == 190 and pending == 0 and needs_correction == 0 and unclear == 0 and blocking_findings == 0"
   },
   "observed": {
     "official_answers": 190,
@@ -44,11 +59,12 @@
   },
   "segmentation_method": "connected-component detection of printed question-number dash; calibrated for year 1404 only",
   "blocking_exceptions": [],
-  "next_action": "Gate 3: structured transcription of Q1-Q190 for year 1404; persist large source/working artifacts under the configured Google Drive year path, retain raw OCR, parse stem/options, flag figures, and do not start 1403.",
+  "next_action": "Gate 3: structured transcription of Q1-Q190 for year 1404. After internal source verification, publish the full 1404 review package under 05_human_review, populate the Google Sheet review queue, require independent human approval of all 190 questions, resolve reviewer findings, and do not start 1403 until the human-review gate passes.",
   "notes": [
     "Most question pages are image-based even when a PDF text layer exists.",
     "Official answer key for 1404 is machine-readable and mapped 190/190.",
     "Question marker geometry is year-specific and must not be reused blindly for other years.",
-    "Google Drive is the persistent data plane; GitHub remains the control plane."
+    "Google Drive is the persistent data plane; GitHub remains the control plane.",
+    "Independent human review is mandatory before a year can be marked complete."
   ]
 }
