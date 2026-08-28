@@ -1,0 +1,35 @@
+{
+  "config_version": "0.1.0",
+  "year": 1404,
+  "dpi": 300,
+  "threshold": 180,
+  "dedup_y": 20,
+  "page_glob": "page-*.png",
+  "page_number_separator": "-",
+  "components": [
+    {
+      "name": "english_question_dash",
+      "x_min": 250,
+      "x_max": 310,
+      "y_min": 280,
+      "y_max": 3250,
+      "w_min": 12,
+      "w_max": 16,
+      "h_min": 4,
+      "h_max": 7,
+      "area_min": 50
+    },
+    {
+      "name": "persian_question_dash",
+      "x_min": 2140,
+      "x_max": 2200,
+      "y_min": 280,
+      "y_max": 3250,
+      "w_min": 18,
+      "w_max": 22,
+      "h_min": 1,
+      "h_max": 4,
+      "area_min": 35
+    }
+  ]
+}

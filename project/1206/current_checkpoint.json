@@ -1,0 +1,43 @@
+{
+  "checkpoint_version": "0.2.1",
+  "skill_version": "0.1.0",
+  "bank_id": "1206",
+  "project_title": "MSc Biology 1206 Test Bank",
+  "processing_policy": "strict_year_by_year",
+  "year_order": [1404, 1403, 1402, 1401, 1400, 1399, 1398, 1397, 1396, 1395, 1394],
+  "active_year": 1404,
+  "next_year_locked": true,
+  "expected_question_count": 190,
+  "source_summary": {
+    "question_pdf_pages": 24,
+    "question_pdf_sha256": "4d945e132d0ce03f0f2f788e9bdf73758ef5b874c453338a842d053a3e9f8a5f",
+    "answer_key_sha256": "daf0de188b091a6736e5c84219e344fcb79aae1ee92ac24198ee11eafe3f17cc"
+  },
+  "gates": {
+    "source_locked": true,
+    "answer_key_parsed": true,
+    "answer_key_complete": true,
+    "question_blocks_extracted": true,
+    "ocr_structured": false,
+    "figure_context_review_complete": false,
+    "human_text_review_complete": false,
+    "year_complete": false
+  },
+  "observed": {
+    "official_answers": 190,
+    "detected_question_markers": 190,
+    "question_source_crops": 190,
+    "shared_contexts": 4,
+    "shared_context_question_count": 18,
+    "question_pages": [2, 23],
+    "blank_trailing_page": 24
+  },
+  "segmentation_method": "connected-component detection of printed question-number dash; calibrated for year 1404 only",
+  "blocking_exceptions": [],
+  "next_action": "Gate 3: structured transcription of Q1-Q190 for year 1404; retain raw OCR, parse stem/options, flag figures, and do not start 1403.",
+  "notes": [
+    "Most question pages are image-based even when a PDF text layer exists.",
+    "Official answer key for 1404 is machine-readable and mapped 190/190.",
+    "Question marker geometry is year-specific and must not be reused blindly for other years."
+  ]
+}
