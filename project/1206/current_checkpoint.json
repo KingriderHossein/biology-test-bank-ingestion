@@ -1,5 +1,5 @@
 {
-  "checkpoint_version": "0.4.0",
+  "checkpoint_version": "0.4.1",
   "skill_version": "0.3.0",
   "bank_id": "1206",
   "project_title": "MSc Biology 1206 Test Bank",
@@ -41,11 +41,12 @@
     "year_complete": false
   },
   "review_package": {
+    "version": "0.3.0",
     "format": "markdown",
-    "markdown_file": "1206_1404_extracted_questions_review_v0.2.0.md",
+    "markdown_file": "1206_1404_extracted_questions_review_v0.3.0.md",
     "images_directory": "images",
     "validation_file": "validation_summary_v0.3.0.json",
-    "zip_bundle": "1206_1404_review_md_package_v0.2.0.zip",
+    "zip_bundle": "1206_1404_review_md_package_v0.3.0.zip",
     "question_count": 190,
     "image_reference_count": 5,
     "image_bearing_questions": [66, 73, 78, 89, 172],
@@ -54,7 +55,7 @@
     "missing_image_references": [],
     "validator": "scripts/validate_markdown_review_v0.3.0.py",
     "validator_passed": true,
-    "legacy_google_doc_role": "moved_to_04_reports_not_canonical"
+    "legacy_review_artifacts_role": "moved_to_04_reports_not_canonical"
   },
   "human_review": {
     "required": true,
@@ -86,8 +87,8 @@
     "Official answer key for 1404 is machine-readable and mapped 190/190; human review is focused on booklet extraction accuracy.",
     "Question marker geometry is year-specific and must not be reused blindly for other years.",
     "Google Drive is the persistent data plane; GitHub remains the control plane.",
-    "Canonical human-review output is now Markdown plus relative image assets, not a Google Doc.",
-    "The Markdown package passed structural QA for 190/190 question headings and 5/5 local image references.",
+    "Canonical human-review output is Markdown plus relative image assets, not a Google Doc.",
+    "The v0.3.0 Markdown package passed structural QA for 190/190 question headings and 5/5 local image references.",
     "Human review remains intentionally minimal: highlight errors only."
   ]
 }
