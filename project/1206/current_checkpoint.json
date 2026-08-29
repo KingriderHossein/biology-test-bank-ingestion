@@ -1,5 +1,5 @@
 {
-  "checkpoint_version": "0.3.1",
+  "checkpoint_version": "0.3.2",
   "skill_version": "0.2.1",
   "bank_id": "1206",
   "project_title": "MSc Biology 1206 Test Bank",
@@ -28,10 +28,11 @@
     "answer_key_parsed": true,
     "answer_key_complete": true,
     "question_blocks_extracted": true,
+    "ocr_transcription_draft_complete": true,
     "ocr_structured": false,
     "figure_context_review_complete": false,
     "internal_source_review_complete": false,
-    "human_review_doc_published": false,
+    "human_review_doc_published": true,
     "human_review_finished": false,
     "highlighted_errors_resolved": false,
     "year_complete": false
@@ -41,26 +42,34 @@
     "surface": "google_doc",
     "reviewer_task": "compare extracted questions with the original booklet and highlight incorrect text or extracted parts only",
     "review_doc_title": "1206 - 1404 Extracted Questions Review",
-    "review_doc_created": false,
-    "no_sheet_or_status_form": true
+    "review_doc_created": true,
+    "review_doc_question_count": 190,
+    "review_doc_inline_source_images": 5,
+    "no_sheet_or_status_form": true,
+    "status": "waiting_for_reviewer_highlights"
   },
   "observed": {
     "official_answers": 190,
     "detected_question_markers": 190,
     "question_source_crops": 190,
+    "ocr_question_drafts": 190,
+    "empty_ocr_question_drafts": 0,
     "shared_contexts": 4,
     "shared_context_question_count": 18,
+    "review_doc_question_blocks": 190,
+    "review_doc_figure_blocks": 5,
     "question_pages": [2, 23],
     "blank_trailing_page": 24
   },
   "segmentation_method": "connected-component detection of printed question-number dash; calibrated for year 1404 only",
   "blocking_exceptions": [],
-  "next_action": "Gate 3: structured transcription of Q1-Q190 for year 1404. After internal verification, create one Google Doc in 05_human_review containing all extracted questions. The reviewer only highlights incorrect parts. Resolve highlighted errors and do not start 1403 until review is finished.",
+  "next_action": "Wait for the human reviewer to compare the 1404 Google Doc with the original booklet and highlight incorrect extracted parts only. Then inspect highlights, correct the structured extraction, update the review Doc as needed, resolve all highlighted errors, and do not start 1403 until year 1404 is complete.",
   "notes": [
     "Most question pages are image-based even when a PDF text layer exists.",
-    "Official answer key for 1404 is machine-readable and mapped 190/190.",
+    "Official answer key for 1404 is machine-readable and mapped 190/190, but the review Doc is focused only on booklet extraction and does not ask the reviewer to verify the answer key.",
     "Question marker geometry is year-specific and must not be reused blindly for other years.",
     "Google Drive is the persistent data plane; GitHub remains the control plane.",
+    "The 1404 review Doc is an extraction draft for human highlighting, not a claim of fully verified transcription.",
     "Human review is intentionally minimal: one Google Doc per year and highlighting errors only."
   ]
 }
