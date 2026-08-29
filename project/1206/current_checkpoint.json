@@ -1,9 +1,9 @@
 {
-  "checkpoint_version": "0.3.2",
-  "skill_version": "0.2.1",
+  "checkpoint_version": "0.4.0",
+  "skill_version": "0.3.0",
   "bank_id": "1206",
   "project_title": "MSc Biology 1206 Test Bank",
-  "processing_policy": "strict_year_by_year_with_simple_human_review",
+  "processing_policy": "strict_year_by_year_with_markdown_human_review",
   "year_order": [1404, 1403, 1402, 1401, 1400, 1399, 1398, 1397, 1396, 1395, 1394],
   "active_year": 1404,
   "next_year_locked": true,
@@ -15,7 +15,8 @@
     "drive_bank_path": "Biology Test Bank Ingestion/1206",
     "drive_active_year_path": "Biology Test Bank Ingestion/1206/1404",
     "year_subfolders": ["01_sources", "02_working", "03_validated", "04_reports", "05_human_review"],
-    "human_review_surface": "one_google_doc_per_year",
+    "human_review_surface": "markdown_package_with_relative_images",
+    "canonical_review_path": "Biology Test Bank Ingestion/1206/1404/05_human_review",
     "public_github_private_drive_identifiers": "do_not_persist"
   },
   "source_summary": {
@@ -32,21 +33,37 @@
     "ocr_structured": false,
     "figure_context_review_complete": false,
     "internal_source_review_complete": false,
-    "human_review_doc_published": true,
+    "markdown_review_package_built": true,
+    "markdown_package_qa_passed": true,
+    "human_review_package_published": true,
     "human_review_finished": false,
     "highlighted_errors_resolved": false,
     "year_complete": false
   },
+  "review_package": {
+    "format": "markdown",
+    "markdown_file": "1206_1404_extracted_questions_review_v0.2.0.md",
+    "images_directory": "images",
+    "validation_file": "validation_summary_v0.3.0.json",
+    "zip_bundle": "1206_1404_review_md_package_v0.2.0.zip",
+    "question_count": 190,
+    "image_reference_count": 5,
+    "image_bearing_questions": [66, 73, 78, 89, 172],
+    "missing_questions": [],
+    "duplicate_questions": [],
+    "missing_image_references": [],
+    "validator": "scripts/validate_markdown_review_v0.3.0.py",
+    "validator_passed": true,
+    "legacy_google_doc_role": "moved_to_04_reports_not_canonical"
+  },
   "human_review": {
     "required": true,
-    "surface": "google_doc",
-    "reviewer_task": "compare extracted questions with the original booklet and highlight incorrect text or extracted parts only",
-    "review_doc_title": "1206 - 1404 Extracted Questions Review",
-    "review_doc_created": true,
-    "review_doc_question_count": 190,
-    "review_doc_inline_source_images": 5,
+    "surface": "markdown",
+    "reviewer_task": "compare the Markdown package with the original booklet and highlight only incorrect extracted parts",
+    "preferred_highlight_syntax": "==incorrect extracted text==",
+    "image_error_instruction": "if an image crop is wrong or incomplete, highlight the visible image label near that image",
     "no_sheet_or_status_form": true,
-    "status": "waiting_for_reviewer_highlights"
+    "status": "waiting_for_reviewer_highlights_in_markdown"
   },
   "observed": {
     "official_answers": 190,
@@ -56,20 +73,21 @@
     "empty_ocr_question_drafts": 0,
     "shared_contexts": 4,
     "shared_context_question_count": 18,
-    "review_doc_question_blocks": 190,
-    "review_doc_figure_blocks": 5,
+    "review_markdown_question_blocks": 190,
+    "review_markdown_image_blocks": 5,
     "question_pages": [2, 23],
     "blank_trailing_page": 24
   },
   "segmentation_method": "connected-component detection of printed question-number dash; calibrated for year 1404 only",
   "blocking_exceptions": [],
-  "next_action": "Wait for the human reviewer to compare the 1404 Google Doc with the original booklet and highlight incorrect extracted parts only. Then inspect highlights, correct the structured extraction, update the review Doc as needed, resolve all highlighted errors, and do not start 1403 until year 1404 is complete.",
+  "next_action": "Give the 1404 Markdown review package and original booklet to the human reviewer. The reviewer highlights only incorrect extracted parts, preferably with ==...==. If a source image crop is wrong, highlight its visible image label. After review, inspect every highlight against the authoritative source, correct structured data or image crops, regenerate the Markdown package, rerun final package QA, republish, and do not start 1403 until all review errors are resolved and 1404 is complete.",
   "notes": [
     "Most question pages are image-based even when a PDF text layer exists.",
-    "Official answer key for 1404 is machine-readable and mapped 190/190, but the review Doc is focused only on booklet extraction and does not ask the reviewer to verify the answer key.",
+    "Official answer key for 1404 is machine-readable and mapped 190/190; human review is focused on booklet extraction accuracy.",
     "Question marker geometry is year-specific and must not be reused blindly for other years.",
     "Google Drive is the persistent data plane; GitHub remains the control plane.",
-    "The 1404 review Doc is an extraction draft for human highlighting, not a claim of fully verified transcription.",
-    "Human review is intentionally minimal: one Google Doc per year and highlighting errors only."
+    "Canonical human-review output is now Markdown plus relative image assets, not a Google Doc.",
+    "The Markdown package passed structural QA for 190/190 question headings and 5/5 local image references.",
+    "Human review remains intentionally minimal: highlight errors only."
   ]
 }
