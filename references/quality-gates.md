@@ -28,19 +28,41 @@ Pass when:
 
 ## Gate 4 - Figure/context review
 Pass when:
-- every suspected figure has a reviewed figure status;
-- every shared passage/context is separately represented and mapped.
+- every shared passage/context is separately represented and mapped;
+- every image-bearing question is identified;
+- every required visual has a faithful source crop or a logged blocking exception;
+- visual assets are not redrawn or model-regenerated.
 
-## Gate 5 - Human text review
+## Gate 5 - Internal extraction QA
 Pass when:
-- all required question text is compared against source;
-- option order is verified;
-- scientific symbols/names are checked;
-- no blocking text exceptions remain.
+- question boundaries and option ordering are checked;
+- obvious OCR errors are corrected in cleaned text while raw OCR is preserved;
+- scientific symbols/names and mixed-language text are reviewed as needed;
+- answer, context, and figure associations are consistent;
+- no blocking extraction exception remains.
 
-## Gate 6 - Year complete
+## Gate 6 - Markdown review package QA
+Pass when:
+- the yearly `.md` review file contains exactly the expected number of question headings;
+- numbering is complete, unique, and in range;
+- every local image link resolves;
+- image-reference count matches the image-bearing-question manifest;
+- every published image crop has been opened and visually checked for clipping, wrong association, and missing essential content;
+- shared contexts occur in the intended location;
+- first, middle, last, and section-boundary questions have been rechecked;
+- `scripts/validate_markdown_review_v0.3.0.py` returns success;
+- no unresolved placeholder/image-label mismatch remains.
+
+## Gate 7 - Human review complete
+Pass when:
+- the Markdown review package has been published in Google Drive;
+- the reviewer has completed comparison against the original booklet;
+- all highlighted text/image-crop errors are corrected or explicitly resolved;
+- the regenerated final package passes Gate 6 again.
+
+## Gate 8 - Year complete
 Pass when:
 - all project-required gates are true;
 - validator returns success;
-- checkpoint is persisted;
+- final checkpoint is persisted;
 - next year remains untouched until this state is saved.
