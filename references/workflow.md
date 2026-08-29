@@ -40,7 +40,9 @@ DISCOVERED
   -> STRUCTURED_TRANSCRIPTION_COMPLETE
   -> FIGURE_CONTEXT_REVIEW_COMPLETE
   -> INTERNAL_SOURCE_REVIEW_COMPLETE
-  -> HUMAN_REVIEW_DOC_PUBLISHED
+  -> MARKDOWN_REVIEW_PACKAGE_BUILT
+  -> MARKDOWN_PACKAGE_QA_PASSED
+  -> HUMAN_REVIEW_PACKAGE_PUBLISHED
   -> HUMAN_REVIEW_CORRECTIONS_RESOLVED
   -> YEAR_COMPLETE
 ```
@@ -84,28 +86,77 @@ Preferred sequence:
 
 ## 7. Figures
 
-Always preserve the question source crop. Track whether a figure is present and whether it has been isolated/verified.
+Always preserve the question source crop. Before publication, identify every question that contains a required visual element.
+
+For each image-bearing question:
+
+1. locate the figure/graph/pedigree/diagram/structure/table inside the source question/page;
+2. crop only the required visual when separation is reliable;
+3. preserve it without redrawing or reinterpretation;
+4. save it under the review package `images/` directory with a deterministic filename;
+5. visually open the saved crop and verify clipping and question association.
+
+If multiple visuals exist, number them `_01`, `_02`, and so on.
 
 ## 8. Shared contexts
 
-Represent passages/tables/diagrams used by multiple questions as separate records. Each question references `context_id`.
+Represent passages/tables/diagrams used by multiple questions as separate records. Each question references `context_id`. Render shared text once in the Markdown package before the relevant questions.
 
-## 9. Human review publication
+## 9. Markdown review package
 
-After the extracted year passes internal source checks, create one Google Doc under `05_human_review` containing all extracted questions in order.
+After internal extraction checks, create the canonical human-review package under `05_human_review`:
 
-Each question should show the extracted content needed for checking: number, stem, options, official answer, and figure/context when relevant.
+```text
+<bank>_<year>_extracted_questions_review_vX.Y.Z.md
+images/
+validation_summary_vX.Y.Z.json
+<bank>_<year>_review_md_package_vX.Y.Z.zip   # optional
+```
 
-The reviewer has one task only: compare with the original booklet and highlight incorrect extracted text or parts.
+The Markdown file must contain all extracted questions in order and use relative links to cropped visual assets.
 
-Do not require a Google Sheet, per-question approval, status fields, issue codes, reviewer names, dates, or notes.
+Read `markdown-review-package.md` for the exact contract.
 
-Read `human-review-protocol.md` for the simple correction loop.
+## 10. Final package QA
 
-## 10. Completion
+Before publishing or handing the package to the reviewer:
 
-After the reviewer finishes, inspect highlighted portions, verify them against the source, correct the structured dataset, and update the review Doc if needed.
+1. reopen the generated Markdown file;
+2. verify expected question count and numbering;
+3. verify every local image link resolves;
+4. compare image-reference count with the image-bearing-question manifest;
+5. visually open every image crop;
+6. inspect first/middle/last questions and every section-boundary question;
+7. verify shared contexts and image labels;
+8. run `scripts/validate_markdown_review_v0.3.0.py`.
 
-A year becomes complete when the review is finished and all highlighted extraction errors are resolved. Only then unlock the next year.
+If QA fails, return to extraction/figure handling and regenerate the package. Do not publish a failed package.
+
+## 11. Human review publication
+
+Upload the Markdown package to `05_human_review` in Google Drive.
+
+The reviewer has one task only: compare the extracted content with the original booklet and highlight incorrect parts. Prefer `==incorrect text==` as the machine-readable Markdown highlight convention.
+
+If an image crop is incomplete or wrong, the reviewer highlights the nearby visible image label.
+
+Do not require a Google Doc, Google Sheet, per-question approval, status fields, issue codes, reviewer names, dates, or notes.
+
+Read `human-review-protocol.md` for the correction loop.
+
+## 12. Completion
+
+After the reviewer finishes:
+
+1. inspect highlighted portions;
+2. verify each against the authoritative source;
+3. correct structured data or affected image crops;
+4. regenerate the Markdown package;
+5. rerun final package QA;
+6. republish if needed.
+
+A year becomes complete only when review is finished and all highlighted extraction errors are resolved. Only then unlock the next year.
+
+For the full process diagram, read `pipeline-mermaid.md`.
 
 If explanations are added later, keep them as a downstream feature unless the user changes the policy.
