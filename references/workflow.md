@@ -1,5 +1,20 @@
 # Workflow Reference
 
+## Contents
+
+- 1. Workspace model
+- 2. Year-by-year state machine
+- 3. Source audit
+- 4. Text-vs-image decision
+- 5. Segmentation strategy order
+- 6. OCR strategy
+- 7. Figures
+- 8. Shared contexts
+- 9. Markdown review package
+- 10. Final package QA
+- 11. Human review publication
+- 12. Completion
+
 ## 1. Workspace model
 
 Use one workspace per bank and one subdirectory per year:
