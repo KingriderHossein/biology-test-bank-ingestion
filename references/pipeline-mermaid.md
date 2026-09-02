@@ -1,5 +1,12 @@
 # End-to-End Pipeline
 
+## Contents
+
+- Pipeline diagram
+- Non-negotiable invariants
+
+## Pipeline diagram
+
 ```mermaid
 flowchart TD
     A[New test-bank source] --> B[Create or resume bank checkpoint]
