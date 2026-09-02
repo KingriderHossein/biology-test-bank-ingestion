@@ -1,202 +1,152 @@
 ---
 name: biology-test-bank-ingestion
-description: Build reliable structured question banks from exam PDFs, scanned booklets, answer keys, archives, and mixed text/image questions. Use when the user wants to ingest, audit, OCR, segment, validate, resume, or extend a test bank; convert exam booklets into structured question records; preserve figures and shared passages; map official answer keys; or continue a multi-year question-bank project. Enforce strict year-by-year processing with quality gates, persistent checkpoints, Google Drive as the data plane, and a Markdown-plus-images human-review package before a year is completed.
+description: Build reliable structured question banks from exam PDFs, scanned booklets, answer keys, archives, and mixed text/image questions. Use when the user wants to ingest, audit, OCR/transcribe, segment, validate, resume, or extend a test bank; convert exam booklets into structured question records; preserve figures and shared passages; map official answer keys; or continue a multi-year question-bank project. Enforce year-by-year processing, provenance, deterministic validation, persistent checkpoints, and a Markdown-plus-images human-review package before a year can be completed.
 ---
 
 # Biology Test Bank Ingestion
 
-Process question-bank sources as a provenance-preserving data pipeline. Treat verified structured data as the primary product.
+Protocol version: 0.4.0
 
-## Core rule: one year at a time
+Treat verified structured data and provenance as the primary product. Keep reusable pipeline rules separate from project-specific state.
 
-For a multi-year bank, process exactly one exam year at a time.
+## Core invariants
 
-1. Select the active year.
-2. Complete source audit, answer mapping, segmentation, transcription, context handling, image handling, and internal QA for that year.
-3. Detect every question that requires a visual source and crop the required visual from the authoritative source.
-4. Build one Markdown review package containing all questions in order plus relative `images/` assets.
-5. Reopen and validate the generated Markdown package before publication.
-6. Publish the package under the year folder in Google Drive.
-7. Let the human reviewer highlight only incorrect extracted parts.
-8. Resolve highlighted errors, regenerate/revalidate the package, and repeat if needed.
-9. Persist the final checkpoint.
-10. Do not start the next year until the active year has passed the human-review completion gate.
+1. **One active year at a time.** Do not start the next year until the current year passes machine validation, review-package validation, human review, correction, and checkpoint completion.
+2. **Source provenance is immutable.** Lock source identity and hashes before extraction. Do not overwrite or silently replace original source files.
+3. **Official answers outrank inference.** Never invent a missing official answer or silently substitute a model guess.
+4. **OCR/transcription is draft evidence.** Preserve raw extraction separately from cleaned text and verify against authoritative source pages/crops.
+5. **Visual evidence must be preserved faithfully.** Detect image-bearing questions and crop required figures from the authoritative source. Do not redraw or model-regenerate source figures.
+6. **Human review is a release gate, not optional polish.** A year is not complete until highlighted extraction errors are resolved or explicitly dispositioned.
+7. **Checkpoint state is authoritative for continuation.** Do not reconstruct progress from conversation memory, README text, or assumptions when a project checkpoint exists.
+8. **Do not claim persistence that did not occur.** If the configured Drive/repository write is unavailable, report the blocker and keep the year incomplete.
 
-If a user asks to resume an existing project, first load `project/<bank-id>/current_checkpoint.json` from the corresponding GitHub repository. Do not reconstruct status from memory when a checkpoint exists.
+## Project-state routing
 
-## Storage model
+For an existing bank, resolve the project ID and load:
 
-Read `references/storage-policy.md` before writing persistent project data.
+`project/<bank-id>/current_checkpoint.json`
 
-Use:
+before deciding what to do next.
 
-- GitHub as the control plane for code, schemas, configs, hashes, quality gates, checkpoints, and non-content metadata.
-- Google Drive as the data plane for source archives/PDFs, rendered pages, question crops, figures, OCR/raw transcription, structured datasets, validated exports, and human-review packages.
-- Markdown plus relative image assets as the canonical human-review surface. Do not create a Google Doc or Google Sheet for human review unless the user explicitly asks for one.
+Use the checkpoint to determine the active year, completed gates, artifact locations, versions, unresolved review state, and next gate. Project-specific facts belong in `project/`, not in this reusable `SKILL.md`.
 
-When the GitHub repository is public, do not persist private Drive folder IDs or private Drive URLs unless the user explicitly requests it. Persist logical Drive names/paths and resolve them through connected Drive when resuming.
+For a new bank, create a project ID and initialize its checkpoint according to `references/checkpoint-protocol.md` before multi-session work begins.
 
-## Workflow
+## Reference routing
 
-Read `references/workflow.md` and `references/pipeline-mermaid.md` before running a new ingestion or resuming after a long gap.
+Load detailed references only when their stage is reached.
 
-### Gate 0 - Source audit and lock
+- `references/storage-policy.md` — read before writing persistent project data or resolving repository/Drive responsibilities.
+- `references/workflow.md` — read for a new ingestion, a long-gap resume, or when gate order is unclear.
+- `references/quality-gates.md` — read before declaring any gate or year complete.
+- `references/data-contract.md` — read when creating or changing structured question/context/figure records.
+- `references/checkpoint-protocol.md` — read when initializing, resuming, or persisting project state.
+- `references/markdown-review-package.md` — read when building, validating, or correcting the canonical human-review package.
+- `references/human-review-protocol.md` — read when publishing for human review or applying reviewer highlights.
+- `references/pipeline-mermaid.md` — read only when the user asks for a workflow map/diagram or when a human-facing overview is useful; it is not required for normal execution.
 
-- Inventory source files.
-- Identify question booklet and official answer key for the active year.
-- Record SHA-256 hashes and page count.
-- Check whether native PDF text is actually useful.
-- Keep original files immutable.
+Do not load every reference by default and do not duplicate its full schema in this entrypoint.
 
-### Gate 1 - Official answer mapping
+## Storage boundary
 
-- Prefer the official answer key over model inference.
-- Normalize Persian/Arabic digits when parsing.
-- Validate that all expected question numbers have exactly one allowed answer.
-- Never silently invent a missing answer.
+Follow `references/storage-policy.md`.
 
-Use `scripts/parse_answer_key_pairs_v0.1.0.py` when applicable.
+Default architecture:
 
-### Gate 2 - Question segmentation
+- **GitHub/control repository:** reusable code, schemas, configs, hashes, validation rules, checkpoints, and small non-content metadata.
+- **Google Drive/data plane when configured:** source archives/PDFs, rendered pages, source/question crops, figures, OCR/raw transcription, structured datasets, validated exports, and human-review packages.
+- **Markdown plus relative image assets:** canonical human-review surface unless the user explicitly requests another surface.
 
-- Render image-based pages at high resolution, normally 300 DPI.
-- Prefer deterministic layout cues over OCR for question numbering when reliable.
-- Calibrate detector thresholds per year.
-- Require detected question count to match expected count.
-- Preserve one authoritative source crop for every question.
+Do not store copyrighted exam PDFs, full question-image corpora, or large generated page assets in a public reusable Skill repository by default. Do not persist private Drive IDs/URLs in a public repository unless the user explicitly requests it; prefer logical paths that can be resolved through the connected data plane.
 
-Use `scripts/detect_markers_v0.1.0.py` with a year-specific config, then `scripts/build_question_crops_v0.1.0.py`.
+## Pipeline
 
-### Gate 3 - Structured transcription
+Use the gate order defined in `references/workflow.md`. The control flow is:
 
-For each question create:
+`source lock -> official answer mapping -> segmentation/crops -> structured transcription -> figures/contexts -> internal QA -> review-package validation -> human review/correction -> year completion`
 
-- question number and source page;
-- `stem_raw` / `stem_clean`;
-- expected options or type-specific structure;
-- official correct option;
-- context/figure references;
-- extraction and review status.
+### 0. Source lock
 
-OCR output is a draft, never verified truth. Mixed Persian/English scientific notation, formulas, sequences, gene/protein names, Greek letters, subscripts, and option numbering require special review.
+Inventory authoritative source files, identify the question booklet and official answer key, record hashes/page counts, assess whether native PDF text is usable, and keep originals immutable.
 
-### Gate 4 - Figures and shared contexts
+### 1. Official answer mapping
 
-- Detect every image-bearing question before publication.
-- Crop the visual itself from the authoritative page/question crop; do not redraw it.
-- Include graphs, pedigrees, diagrams, chemical structures, image-based tables, maps, and other essential visual evidence.
-- Name assets deterministically, for example `images/q066_figure_01.png`.
-- Keep shared passages/contexts as separate records and render them once in the review output.
+Parse the official answer key, normalize digits when needed, require one valid answer per expected question, and surface missing/ambiguous answers instead of guessing.
 
-Read `references/markdown-review-package.md` for the image/output contract.
+Use `scripts/parse_answer_key_pairs_v0.1.0.py` when the source format matches its contract.
 
-### Gate 5 - Internal extraction QA
+### 2. Segmentation and authoritative crops
 
-- Compare extracted text with source crops/pages.
-- Resolve obvious OCR and boundary errors before publication.
-- Verify option order, answer association, context association, and figure-question association.
-- Keep raw OCR and cleaned text separately.
+Render source pages at sufficient resolution, use deterministic layout cues where reliable, calibrate detector parameters per year, require the detected question count to match the expected count, and preserve an authoritative source crop for every question.
 
-### Gate 6 - Build and validate Markdown review package
+Use `scripts/detect_markers_v0.1.0.py` and `scripts/build_question_crops_v0.1.0.py` when applicable. Do not assume one year's geometry or thresholds apply to another year.
 
-Read `references/markdown-review-package.md`.
+### 3. Structured transcription
 
-Create under `05_human_review/`:
+Create records that preserve question identity, source page/crop provenance, raw extraction, cleaned text, option/type structure, official answer provenance, context/figure links, and extraction/review state according to `references/data-contract.md`.
 
-```text
-<bank>_<year>_extracted_questions_review_vX.Y.Z.md
-images/
-validation_summary_vX.Y.Z.json
-<bank>_<year>_review_md_package_vX.Y.Z.zip   # optional convenience bundle
-```
+Apply extra review to mixed Persian/English scientific notation, formulas, sequences, gene/protein names, Greek letters, subscripts, and option numbering.
 
-Before upload, reopen the Markdown and verify:
+### 4. Figures and shared contexts
 
-- expected question count;
-- complete/unique numbering;
-- all local image links resolve;
-- image count matches the image-bearing-question manifest;
-- every image crop is visually opened and checked for clipping or wrong association;
-- shared contexts and section boundaries are correct.
+Detect every question requiring visual evidence. Crop the required visual from the authoritative source and name assets deterministically. Store shared passages/contexts as separate records so they are not duplicated or associated with the wrong questions.
+
+### 5. Internal QA
+
+Compare cleaned extraction against authoritative crops/pages. Verify boundaries, numbering, option order, answer association, context association, figure association, and raw-versus-clean separation.
+
+### 6. Build and validate the Markdown review package
+
+Follow `references/markdown-review-package.md`. Build one ordered yearly Markdown package plus relative `images/` assets and a validation summary. Before publication, reopen the package and verify expected question count, unique/complete numbering, local image links, image-bearing-question coverage, visual crop correctness, shared contexts, and section boundaries.
 
 Run `scripts/validate_markdown_review_v0.3.0.py` for deterministic structural validation. Do not publish a package that fails validation.
 
-### Gate 7 - Human review and correction loop
+### 7. Human review and correction
 
-Read `references/human-review-protocol.md`.
+Follow `references/human-review-protocol.md`. The human reviewer should identify incorrect extraction with the minimal supported convention, for example `==incorrect extracted text==`. Verify each marked issue against the authoritative source, correct the structured data or crop, regenerate the review package, rerun QA, and repeat until unresolved extraction errors are cleared or explicitly resolved.
 
-The reviewer has one task only: compare the Markdown package with the original booklet and highlight incorrect extracted parts. Prefer the machine-readable Markdown convention:
+### 8. Complete the year
 
-```markdown
-==incorrect extracted text==
-```
+Read `references/quality-gates.md` before setting `COMPLETE`. Persist the final checkpoint only after all required machine, package, and human-review gates pass. Then unlock the next year.
 
-No status table, issue code, reviewer name, date, or written explanation is required.
+## Resume behavior
 
-For an incorrect image crop, highlight the visible image label near that image.
+When the user asks to continue or resume:
 
-After review:
+1. load the current project checkpoint;
+2. verify referenced persistent artifacts still exist when that affects the next action;
+3. resume from the first incomplete or failed gate;
+4. do not redo completed work unless validation evidence is missing, stale, or invalidated by a changed source/config/script;
+5. persist a new checkpoint after each completed gate.
 
-1. verify each highlight against the authoritative source;
-2. correct the structured dataset or image crop;
-3. regenerate the Markdown package;
-4. rerun final package QA;
-5. republish and repeat until no unresolved highlighted errors remain.
+## New-bank behavior
 
-### Gate 8 - Year completion
+For a different question bank:
 
-A year can be `COMPLETE` only when:
+1. create a new bank ID and checkpoint;
+2. inventory available years;
+3. select one active year;
+4. resolve configured storage paths;
+5. calibrate extraction/segmentation for that year;
+6. run the same gate sequence and data contract;
+7. build and validate one canonical Markdown review package;
+8. complete the human correction loop;
+9. persist the checkpoint before moving to the next year.
 
-- machine/data validation passes;
-- the canonical Markdown review package is published;
-- final package QA has passed;
-- the human reviewer has finished;
-- all highlighted extraction errors are corrected or explicitly resolved;
-- the final checkpoint is persisted.
+Never assume a prior bank's layout, subject ranges, question count, marker geometry, or answer-key format applies to another bank or year.
 
-Then and only then unlock the next year.
+## Session output
 
-## Data contract
-
-Read `references/data-contract.md` when creating or modifying JSON records. Preserve source hashes, source page, crop coordinates, raw OCR/transcription, cleaned text, official-answer provenance, context/figure provenance, review state, and pipeline/script version.
-
-## Persistent checkpoints
-
-After every completed gate, update the project's checkpoint file. Read `references/checkpoint-protocol.md`.
-
-For the current MSc Biology 1206 project, the checkpoint is stored at `project/1206/current_checkpoint.json`.
-
-Do not store copyrighted exam PDFs, full question crops, or large generated page images in the public reusable skill repository. Store project artifacts in the configured Google Drive data plane.
-
-## Reuse for another question bank
-
-When the user provides a different bank:
-
-1. Create a new bank ID.
-2. Inventory its available years.
-3. Select one active year only.
-4. Create/resolve its Drive bank/year folders.
-5. Calibrate extraction and segmentation for that year.
-6. Apply the same gates and data contract.
-7. Detect and crop all required visuals.
-8. Build, reopen, validate, and publish one Markdown review package for that year.
-9. Complete the minimal human-highlight correction loop.
-10. Persist a new checkpoint under `project/<bank-id>/`.
-
-Do not assume the 1206 layout, subject ranges, question count, or 1404 marker geometry applies to another bank or year.
-
-## Output expectations
-
-At the end of each working session report only verifiable state:
+At the end of a substantive working session, report only verifiable state that is useful for continuation:
 
 - active bank and year;
-- completed gates;
-- detected/expected question counts;
-- image-bearing question count and package image count;
+- completed and failed/incomplete gates;
+- detected versus expected question count when measured;
+- image-bearing question count and packaged image count when measured;
 - Markdown validation result;
-- whether the review package is published;
-- whether human-review highlights remain unresolved;
+- review-package persistence/publication state;
+- unresolved human-review state;
 - exact next gate;
 - checkpoint version/path.
 
-Never claim a year is complete before the Markdown review and correction gate passes.
+Never claim a year is complete before the required validation and human-review gates pass.
