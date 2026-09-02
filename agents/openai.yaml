@@ -1,3 +1,4 @@
 interface:
   display_name: "Biology Test Bank Ingestion"
   short_description: "Turn exam PDFs into verified question banks, one year at a time."
+  default_prompt: "Ingest or resume this exam year as a provenance-preserving question-bank pipeline, load the current checkpoint when one exists, and stop at the first incomplete quality gate."
