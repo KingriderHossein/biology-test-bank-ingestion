@@ -2,26 +2,36 @@
 
 Reusable ChatGPT Skill and deterministic helpers for converting exam archives/PDFs into a provenance-preserving structured question bank.
 
+## Current version
+
+Skill: `v0.4.0`
+
 ## Main rule
 
-**One year at a time.** A later year must remain locked until the active year passes its completion gate and its checkpoint is persisted.
+**One year at a time.** A later year remains locked until the active year passes machine validation, Markdown review-package validation, human review/correction, and final checkpoint persistence.
 
-## What the repository stores
+## Architecture
 
-- `SKILL.md` - reusable workflow instructions.
-- `scripts/` - deterministic helpers for source locking, answer-key parsing, segmentation, cropping, and validation.
-- `references/` - data contract, quality gates, checkpoint protocol, and workflow rules.
-- `project/` - small non-content checkpoints used to resume long-running banks across chats.
+- `SKILL.md` — reusable control plane, routing, invariants, and gate order.
+- `agents/openai.yaml` — UI metadata and default prompt.
+- `scripts/` — deterministic helpers for source locking, answer-key parsing, segmentation, cropping, and validation.
+- `references/` — runtime policies for storage, workflow, data, checkpoints, QA, Markdown review packages, and human review.
+- `project/` — small project-specific checkpoints used to resume long-running banks across conversations.
+- `CHANGELOG.md` — repository release history; it is not a runtime reference.
 
-It does **not** publish raw exam PDFs, full question images, or the extracted copyrighted question corpus by default.
+The repository does **not** publish raw exam PDFs, full question-image corpora, or the extracted copyrighted question corpus by default.
 
-## Current seeded project
+## Project state
 
-`project/1206/current_checkpoint.json` records the current state of exam code 1206. Year 1404 is active. Source lock, 190/190 official answers, and 190/190 source question crops are complete. Structured transcription is the next gate.
+Do not use README text as the authoritative status of a bank. Current state lives in:
 
-## Version
+`project/<bank-id>/current_checkpoint.json`
 
-Skill: `v0.1.0`
+When resuming a bank, load its checkpoint and continue from the first incomplete or invalidated gate. This avoids stale project status in reusable Skill documentation.
+
+## Persistent data
+
+The default project architecture keeps reusable code, schemas, hashes, configs, and checkpoints in the control repository while large source/working/review artifacts use the configured Google Drive data plane. See `references/storage-policy.md` for the current policy.
 
 ## Runtime dependencies
 
